@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JunoAI - Sombra</title>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <script type="text/javascript" src="/eel.js"></script>
+    <style>
+        .save {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .execute {
+            background-color: #6f42c1;
+            color: #fff;
+        }
+
+        textarea {
+        width: 100%;  /* Ocupa todo el ancho del contenedor */
+        height: 600px;  /* Ocupa todo el alto de la ventana, menos 20px para dar un poco de margen */
+        resize: none;  /* Desactiva la capacidad de redimensionar el textarea manualmente */
+    }
+    </style>
+    <script type="text/javascript">handleExecuteClick
+        handleExecuteClick
+        let recording = false;  // Variable global para manejar el estado de la grabación
+        let recordButton = null; // Almacenaremos la referencia al botón aquí
+
+        function get_updates() {
+            eel.get_updates()(function (result) {
+                // Desempaqueta los resultados en las variables correspondientes
+                var transcription = result;
+
+                // Actualiza los campos de texto con los nuevos valores
+                document.getElementById('transcription-textarea').value = transcription;
+            });
+        }
+
+
+        function updateColor() {
+            // Cambiamos el color del botón dependiendo del estado de la grabación
+            if (recording) {
+                // Change class from primary to error for color red
+                recordButton.style.backgroundColor = 'red';
+                // Change text from Record to Stop
+                recordButton.innerHTML = 'Detener';
+
+            } else {
+                recordButton.style.backgroundColor = '';
+                recordButton.innerHTML = 'Grabar';
+            }
+        }
+
+        function handleRecordClick() {
+            eel.toggle_recording()(function (isRecording) {
+                recording = isRecording;
+                updateColor();
+            });
+        }
+
+        function handleExecuteClick(){
+            context = document.getElementById('context-textarea').value;
+            task = document.getElementById('task-textarea').value;
+            eel.execute(context,task)(function (result) {
+                // Desempaqueta los resultados en las variables correspondientes
+                var summary = result;
+
+                // Actualiza los campos de texto con los nuevos valores
+                document.getElementById('summary-textarea').value = summary;
+            });
+        }
+        
+        function handleClearClick(){
+            eel.clear()(function (result) {
+                // Actualiza los campos de texto con los nuevos valores
+                document.getElementById('summary-textarea').value = "";
+            });
+        }
+
+        eel.expose(set_result)
+        function set_result(text) {
+            document.getElementById('summary-textarea').value = text;
+        }
+
+        window.onload = function () {
+            // Guardamos la referencia al botón
+            recordButton = document.getElementById('record-upload-btn');
+
+            // Iniciamos la búsqueda de actualizaciones cada segundo
+            setInterval(get_updates, 1000);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>JunoAI - Sombra</h1>
+        </header>
+        <main>
+            <div class="row">
+                <div class="col">
+                    <button id="record-upload-btn" class="button primary" onclick="handleRecordClick()">Grabar</button>
+                    <button class="button execute" onclick="handleExecuteClick()">Ejecutar</button>
+                    <button class="button save" onclick="handleClearClick()">Limpiar</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h3>Contexto</h3>
+                    <input id="context-textarea" type="text" placeholder="Esta es una meet para hablar sobre...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h3>Tarea</h3>
+                    <input id="task-textarea" type="text" placeholder="Escribe un resumen de...">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <h2>Transcripción</h2>
+                    <textarea id="transcription-textarea" placeholder="La transcripción aparecerá aquí..."
+                        disabled></textarea>
+                </div>
+                <div class="col">
+                    <h2>Sombra output</h2>
+                    <textarea id="summary-textarea" placeholder="El resultado de Sombra aparecerá aquí."
+                        disabled></textarea>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
